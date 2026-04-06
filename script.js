@@ -86,12 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(form);
 
             try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
+                // Formatting payload for Netlify Forms
+                const urlEncodedData = new URLSearchParams(formData).toString();
+
+                const response = await fetch("/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: urlEncodedData,
                 });
 
                 if (response.ok) {
@@ -99,12 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusText.textContent = "Merci ! Votre message a été envoyé avec succès. Je vous répondrai rapidement.";
                     form.reset();
                 } else {
-                    const data = await response.json();
-                    if (Object.hasOwn(data, 'errors')) {
-                        statusText.textContent = data["errors"].map(error => error["message"]).join(", ");
-                    } else {
-                        statusText.textContent = "Oops! Un problème est survenu lors de l'envoi du message.";
-                    }
+                    statusText.textContent = "Oops! Un problème est survenu lors de l'envoi du message.";
                     statusText.className = 'form-status status-error';
                 }
             } catch (error) {
