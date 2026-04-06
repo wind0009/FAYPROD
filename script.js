@@ -70,51 +70,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Formspree / Contact Form Submission Handling
+    // 5. Cinematic WhatsApp Form Submission Handling
     const form = document.getElementById('contact-form');
     const statusText = document.getElementById('form-status');
 
     if (form) {
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const btn = form.querySelector('button[type="submit"]');
             const originalBtnText = btn.innerHTML;
-            btn.innerHTML = 'Envoi en cours... <i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            // Animation de chargement professionnelle
+            btn.innerHTML = 'Traitement en cours... <i class="fa-solid fa-circle-notch fa-spin"></i>';
             btn.disabled = true;
+            btn.classList.add('loading-pulse');
 
-            const formData = new FormData(form);
+            // Récupération des données
+            const name = document.getElementById('name').value;
+            const projectSelect = document.getElementById('service');
+            const projectType = projectSelect.options[projectSelect.selectedIndex].text;
+            const budgetInput = document.getElementById('budget');
+            const budget = budgetInput ? budgetInput.value : '';
+            const message = document.getElementById('message').value;
 
-            try {
-                // Formatting payload for Netlify Forms
-                const urlEncodedData = new URLSearchParams(formData).toString();
-
-                const response = await fetch("/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: urlEncodedData,
-                });
-
-                if (response.ok) {
-                    statusText.className = 'form-status status-success';
-                    statusText.textContent = "Merci ! Votre message a été envoyé avec succès. Je vous répondrai rapidement.";
-                    form.reset();
-                } else {
-                    statusText.textContent = "Oops! Un problème est survenu lors de l'envoi du message.";
-                    statusText.className = 'form-status status-error';
-                }
-            } catch (error) {
-                statusText.className = 'form-status status-error';
-                statusText.textContent = "Oops! Un problème est survenu. Veuillez réessayer plus tard.";
-            } finally {
-                btn.innerHTML = originalBtnText;
-                btn.disabled = false;
-
-                setTimeout(() => {
-                    statusText.textContent = '';
-                    statusText.className = 'form-status';
-                }, 5000);
+            // Préparation du message WhatsApp
+            const waNumber = "22600000000"; // Numéro WhatsApp
+            let waText = `Bonjour, je viens de remplir le formulaire sur votre site pour un projet de type *${projectType}*.\n\n`;
+            waText += `*Nom / Marque :* ${name}\n`;
+            if (budget.trim() !== '') {
+                waText += `*Budget :* ${budget}\n\n`;
+            } else {
+                waText += `*Budget :* À discuter\n\n`;
             }
+            waText += `*Détails du projet :*\n${message}\n\n`;
+            waText += `Discutons-en !`;
+
+            const encodedText = encodeURIComponent(waText);
+            const waUrl = `https://wa.me/${waNumber}?text=${encodedText}`;
+
+            // Simulation d'une attente cinématique
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Redirection vers WhatsApp...';
+                
+                setTimeout(() => {
+                    window.open(waUrl, '_blank');
+                    
+                    // Réinitialisation du bouton après l'ouverture
+                    setTimeout(() => {
+                        btn.innerHTML = originalBtnText;
+                        btn.disabled = false;
+                        btn.classList.remove('loading-pulse');
+                        form.reset();
+                    }, 2000);
+                }, 800);
+            }, 1500);
         });
     }
 
